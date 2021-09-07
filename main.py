@@ -1,12 +1,7 @@
-#! en/usr/bin/env python3
+#!/bin/python3
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 import time
-import random
-import datetime
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-
 
 # countdown timer
 
@@ -131,13 +126,17 @@ def main ():
 
 # YOU MSUT NEED TO CONNECT TO ON INDEED BEFORE CONTINUE (COZ  BOT SECURITY ), YOU HAVE  30s
 secs_beg = time.time()
+"""
 PATH = "C:\Program Files (x86)\geckodriver.exe"
 driver = webdriver.Firefox(executable_path=PATH)
-
-
 """
-PATH = 'C:\Program Files (x86)\chromedriver.exe'
-driver = webdriver.Chrome(PATH)"""
+
+options = Options()
+options.add_argument("--user-data-dir=/home/meteor314/.config/google-chrome/Profile 1")  # you need to change the profile path (you cand find this on chrome://version/ )
+chrome_path = r"/home/meteor314/chromedriver"
+options.page_load_strategy = 'normal'
+driver = webdriver.Chrome(chrome_path, options=options)
+if
 driver.get('https://secure.indeed.com/account/login?hl=fr_FR')
 time.sleep(60)
 driver.maximize_window()
