@@ -136,7 +136,7 @@ options.add_argument("--user-data-dir=/home/meteor314/.config/google-chrome/Prof
 chrome_path = r"/home/meteor314/chromedriver"
 options.page_load_strategy = 'normal'
 driver = webdriver.Chrome(chrome_path, options=options)
-if
+
 driver.get('https://secure.indeed.com/account/login?hl=fr_FR')
 time.sleep(60)
 driver.maximize_window()
