@@ -130,6 +130,7 @@ def main ():
 
 
 # YOU MSUT NEED TO CONNECT TO ON INDEED BEFORE CONTINUE (COZ  BOT SECURITY ), YOU HAVE  30s
+
 secs_beg = time.time()
 PATH = "C:\Program Files (x86)\geckodriver.exe"
 driver = webdriver.Firefox(executable_path=PATH)

@@ -1,1 +1,0 @@
-/home/meteor314/pycharm-community-2021.1.2/bin/pycharm.sh
