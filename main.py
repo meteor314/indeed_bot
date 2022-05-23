@@ -4,6 +4,11 @@ from selenium.webdriver.chrome.options import Options
 import time
 import datetime
 import random
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+
+
 
 # countdown timer
 
@@ -16,10 +21,10 @@ def connexion_indeed():
 
 # write on a csv file
 def write_file(title, url):
-    f = open("entreprise.csv", "a", encoding='utf8')
+    #f = open("entreprise.csv", "a", encoding='utf8')
     current_time = (datetime.datetime.now().strftime("%d/%m/%Y, %H:%M:%S"))  # time to string
-    f.write(title + ";" + url + ";" + current_time + "\n")  # url, title of the post, time posted
-    f.close()
+    #f.write(title + ";" + url + ";" + current_time + "\n")  # url, title of the post, time posted
+    #f.close()
 
 
 # calculate time execution
@@ -42,7 +47,7 @@ def apply() : ##Complete auto the form
         get_url = driver.current_url
         print(get_url)
 
-        indeedApplyButton = driver.find_element_by_xpath('//*[@id="indeedApplyButton"]/div/span')
+        indeedApplyButton = driver.find_element_by_xpath('/html/body/div[1]/div[1]/div[1]/div/div/div/div[1]/div/div[1]/div[1]/div[4]/div/div[2]/div/div/div[1]/a')
         indeedApplyButton.click()
 
 
@@ -164,7 +169,7 @@ def main ():
     # connect to the indeed website
     connexion_indeed()
     time.sleep(1)
-    elems = driver.find_elements_by_partial_link_text("Candidature facile")
+    elems = driver.find_elements_by_xpath("/html/body/table[2]/tbody/tr/td/table/tbody/tr/td[1]/div[5]/div/ul/li[*]/div/div[1]/div/div[1]/div/table[2]/tbody/tr[1]/td/span[2]")
     lens = len(elems)
     # print(elems)
     links = []
@@ -187,7 +192,7 @@ def main ():
         # Getting current URL source code
         get_title = driver.title
         write_file(get_title, links[i])
-        time.sleep(5)
+        time.sleep(1)
         print(links[i])
 
 
@@ -200,11 +205,13 @@ driver = webdriver.Firefox(executable_path=PATH)
 """
 
 options = Options()
-path= "/home/kali/.config/google-chrome/Default" # modify with your personnal path
+options.binary_location ="/usr/bin/google-chrome-beta"
+path= "/home/meteor314/.config/google-chrome-beta/Profile 1" # modify with your personnal path
 options.add_argument("--user-data-dir=" + path)  # you need to change the profile path (you cand find this on chrome://version/ )
 chrome_path = r"./chromedriver" # || please replace by chromedriver.exe if you are on w10
 options.page_load_strategy = 'normal'
-driver = webdriver.Chrome(chrome_path, options = options)
+#driver = webdriver.Chrome(chrome_path, options = options)
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
 driver.get('https://fr.indeed.com/jobs?q=informatique&l=%C3%8Ele-de-France&jt=apprenticeship&taxo2=eXAh-UqhTh2uUxY71DdIeQ&start=0')
 driver.implicitly_wait(2)
