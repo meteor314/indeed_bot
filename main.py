@@ -26,7 +26,7 @@ class InitializeSelenium:
 
         listURL = []
         i = searchOptions["start"]
-        while i <=1000:
+        while i <=100:
             link = "https://fr.indeed.com/jobs?q="+searchOptions['q']+"&l="+searchOptions['l']+"&start="+str(i)+"&jt="+searchOptions['jt']
             i+=10
             listURL.append(link)
@@ -70,8 +70,7 @@ class InitializeSelenium:
             j+=1
 
 
-            # switch to new window
-            #driver.switch_to.window(driver.window_handles[-1])
+           
         
             # switch to new tab for   search easy apply
             
