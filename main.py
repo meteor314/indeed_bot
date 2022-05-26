@@ -40,11 +40,12 @@ class InitializeSelenium:
     
 
         easyApply = driver.find_elements(By.CLASS_NAME, value="iaIcon")
-        easyApplyArray =[]
-        print(len(easyApply))  
         
         for e in easyApply:
+            # right click and open link in new tab
             ActionChains(driver).context_click(e).key_down(Keys.CONTROL).click(e).perform()  
+            # switch to new tab
+            driver.switch_to.window(driver.window_handles[1])
         
         time.sleep(600)
 
