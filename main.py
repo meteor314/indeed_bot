@@ -21,7 +21,12 @@ class InitializeSelenium:
             "l" : "Île-de-France",
             "start" : 0,
             "jt" : "apprenticeship",
-            "profile_path" : "/home/meteor314/.config/google-chrome-beta/Profile 1" 
+            
+        }
+
+        paths = {
+            "profile_path" : "C:/Users/thesu/AppData/Local/Google/Chrome/User Data/Default",
+            "binary_location" : "C:\Program Files\Google\Chrome\Application\chrome.exe"
         }
 
         listURL = []
@@ -32,11 +37,14 @@ class InitializeSelenium:
             listURL.append(link)
 
         options = Options()
-        options.binary_location = "/usr/bin/google-chrome-beta"
-        options.add_argument("user-data-dir=" + searchOptions["profile_path"])   # Path to your chrome profile
+        options.binary_location = paths['binary_location']
+        options.add_argument("user-data-dir=" + paths["profile_path"])   # Path to your chrome profile
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
         driver.get(listURL[0])
         driver.maximize_window() 
+        
+
+
         
         # switch to new tab for apply
         j =1
@@ -44,17 +52,18 @@ class InitializeSelenium:
 
             easyApply = driver.find_elements(By.CLASS_NAME, value="iaIcon")
             print(len(easyApply))
-            print("J : ", j)           
+            print("J : ", j)  
+            """         
             for e in easyApply:
                 # right click and open link in new tab
                 ActionChains(driver).context_click(e).key_down(Keys.CONTROL).click(e).perform()  
-            
+            """
             body = driver.find_element(By.TAG_NAME, value="body")
             body.send_keys(Keys.CONTROL + 'n')
             driver.get(listURL[j]) 
             
             # switch to new tab
-
+            """
             i=0  
             while i< len(easyApply):
                 driver.switch_to.window(driver.window_handles[-1])
@@ -63,7 +72,7 @@ class InitializeSelenium:
 
                 driver.switch_to.window(driver.window_handles[-1])
                 i +=1  
-                
+            """
             time.sleep(3)   
 
 
@@ -75,9 +84,9 @@ class InitializeSelenium:
             # switch to new tab for   search easy apply
             
         
-        time.sleep(600)
+        #time.sleep(600)
 
 IndeedBot = InitializeSelenium() # create an instance of the class
 IndeedBot.initialize_selenium() # call the method
-IndeedBot.easy_job()
+
         
