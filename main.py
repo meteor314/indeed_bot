@@ -46,8 +46,10 @@ class InitializeSelenium:
         driver.maximize_window() 
         
 
-
+        f = open("listUrl.txt", "a")
         
+        
+        resumecount=0
         # switch to new tab for apply
         j =1
         while j< len(listURL):      
@@ -63,13 +65,17 @@ class InitializeSelenium:
             i=0  
             while i< len(easyApply):
                 driver.switch_to.window(driver.window_handles[-1])
-                time.sleep(1)
+                #time.sleep(1)
 
                 #Click on first button to apply
                 indeedapply = driver.find_element_by_id("indeedApplyButton")
                 indeedapply.click()
-
-                time.sleep(2)
+                """
+                if "/resume" in driver.current_url: # check if someting is in URL
+                    resumecount+=1
+                """
+                f.write(driver.current_url+"\n")    
+                #time.sleep(2)
                 driver.close()
 
                 driver.switch_to.window(driver.window_handles[-1])
@@ -83,16 +89,21 @@ class InitializeSelenium:
             # switch to new tab
             
             
-            time.sleep(3)   
-
-
+            #time.sleep(3)   
+            '''
+            print("resume : " + str(resumecount))
+            resumecount=0
+            '''
             j+=1
 
 
            
         
             # switch to new tab for   search easy apply
-            
+        f.write(" \n")  
+        f.write("********************************************************************************\n")  
+        f.write(" \n")  
+        f.close()
         
         #time.sleep(600)
 
