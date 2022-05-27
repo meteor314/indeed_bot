@@ -63,7 +63,13 @@ class InitializeSelenium:
             i=0  
             while i< len(easyApply):
                 driver.switch_to.window(driver.window_handles[-1])
-                time.sleep(1)                
+                time.sleep(1)
+
+                #Click on first button to apply
+                indeedapply = driver.find_element_by_id("indeedApplyButton")
+                indeedapply.click()
+
+                time.sleep(2)
                 driver.close()
 
                 driver.switch_to.window(driver.window_handles[-1])
