@@ -26,11 +26,7 @@ class InitializeSelenium:
         self.now = datetime.now()   # current date and time         
         # dd/mm/YY H:M:S
         self.dt_string = self.now.strftime("%d/%m/%Y %H:%M:%S")  
-        pass   
-
-
-    def  initialize_selenium(self):
-        searchOptions = {
+        self.searchOptions = {
             "q" : "informatique",
             "l" : "Île-de-France",
             "start" : 0,
@@ -38,66 +34,73 @@ class InitializeSelenium:
             "end" : 100
             
         }
-        paths = {
+        self.paths = {
             "profile_path" : "/home/meteor314/.config/google-chrome/Profile 4",
             "binary_location" :  "/usr/bin/google-chrome-stable",
         }
 
+        self.options = Options()
+        self.options.binary_location = self.paths['binary_location']
+        self.options.add_argument("user-data-dir=" + self.paths["profile_path"])   # Path to your chrome profile
+        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=self.options)
+
+        pass   
+
+
+    def  initialize_selenium(self):
+        
         listURL = []
-        i = searchOptions["start"]
-        while i <= searchOptions["end"]:
-            link = "https://fr.indeed.com/jobs?q="+searchOptions['q']+"&l="+searchOptions['l']+"&start="+str(i)+"&jt="+searchOptions['jt']
+        i = self.searchOptions["start"]
+        while i <= self.searchOptions["end"]:
+            link = "https://fr.indeed.com/jobs?q="+self.searchOptions['q']+"&l="+self.searchOptions['l']+"&start="+str(i)+"&jt="+self.searchOptions['jt']
             i+=10
             listURL.append(link)
 
-        options = Options()
-        options.binary_location = paths['binary_location']
-        options.add_argument("user-data-dir=" + paths["profile_path"])   # Path to your chrome profile
-        options.add_argument(paths["profile_path"])
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-        driver.get(listURL[0])
-        driver.maximize_window() 
+        self.driver.get(listURL[0]) # go to the first link of the list
+        self.driver.maximize_window() 
         
         resumecount=0
         # switch to new tab for apply
         j =1
         while j< len(listURL):   # loop for all url  
 
-            easyApply = driver.find_elements(By.CLASS_NAME, value="iaIcon")
+            easyApply = self.driver.find_elements(By.CLASS_NAME, value="iaIcon") #link to the easy apply button
             print(len(easyApply))
             print("J : ", j)                     
             for e in easyApply:
                 # right click and open link in new tab
-                ActionChains(driver).context_click(e).key_down(Keys.CONTROL).click(e).perform()  
+                ActionChains(self.driver).context_click(e).key_down(Keys.CONTROL).click(e).perform()  
             i=0  
             while i< len(easyApply):
-                driver.switch_to.window(driver.window_handles[-1])
+                self.driver.switch_to.window(self.driver.window_handles[-1])
+                #time.sleep(2000)
 
                 # write all logs in a file
-                title = driver.title
-                url = driver.current_url
+                title = self.driver.title
+                url = self.driver.current_url
                 self.write_logs(url, title) 
 
 
                 #Click on first button to apply
 
 
-                indeedapply = driver.find_element(By.ID, "indeedApplyButton")
+                indeedapply = self.driver.find_element(By.ID, "indeedApplyButton")
                 indeedapply.click()
 
-                # applyForm.applyForm()
-                applyForm.applyForm()
+                # apply form
+                self.applyForm()
+
                 
 
                 # close current tab
-                driver.close()
-                driver.switch_to.window(driver.window_handles[-1])
+                #self.driver.close()
+                self.driver.switch_to.window(self.driver.window_handles[-1])
                 i +=1  
             
             
-            body = driver.find_element(By.TAG_NAME, value="body")
+            body = self.driver.find_element(By.TAG_NAME, value="body")
             body.send_keys(Keys.CONTROL + 'n') # open new tab
-            driver.get(listURL[j]) 
+            self.driver.get(listURL[j]) 
             j+=1
 
 
@@ -114,40 +117,43 @@ class InitializeSelenium:
         # detect which type of form is it :
         # if it is a resume form, we need to upload a resume or we can just click on the button if we alreday registered our CV
         # if it is a job application form, we need to fill the form and click on the apply button
-        applyButton = self.driver.find_element(By.CLASS_NAME, "ia-continueButton")
-        cvButton = self.driver.find_element(By.ID, "resume-display-buttonHeader")
-        availibility = self.driver.find_element(By.TAG_NAME, "textarea")
-        jobTitle = self.driver.find_element(By.ID, "jobTitle")
-        companyName = self.driver.find_element(By.ID, "companyName")
-        #availibility.send_keys("I am available from now")
-        # verify if the cv button is present in the form or not
+        print ("applyForm")
+
         try :
-            match applyButton.is_displayed():
-                case cvButton.is_displayed(): # upload CV                    
-                    cvButton.click()
-                    applyButton.click()
-                    return True
-                case jobTitle.is_displayed(): # job application form
-                    jobTitle.send_keys("Web Developer as Trainee ")
-                    companyName.send_keys("GFCPHARMA")                    
-                    applyButton.click()
-                    return True
-                case availibility.is_displayed(): # job application form
-                    availibility.send_keys("I am available from now")
-                    applyButton.click()
-                    return True        
-                case default:
-                    print("No button found")
-                    applyButton.click()
+            if self.driver.find_element(By.CLASS_NAME, "ia-continueButton").is_displayed():
+                applyButton = self.driver.find_element(By.CLASS_NAME, "ia-continueButton")
+            
+            elif self.driver.find_element(By.ID, "resume-display-buttonHeader").is_displayed():      
+                cvButton = self.driver.find_element(By.ID, "resume-display-buttonHeader")
+
+            elif self.driver.find_element(By.TAG_NAME, "textarea").is_displayed():
+                availibility = self.driver.find_element(By.TAG_NAME, "textarea")
+                # job application form
+                availibility.send_keys("I am available from now")
+                applyButton.click()
+
+            elif self.driver.find_element(By.ID, "jobTitle").is_displayed():
+                jobTitle = self.driver.find_element(By.ID, "jobTitle")
+                # job application form
+                jobTitle.send_keys("Web Developer as Trainee ")
+                companyName = self.driver.find_element(By.ID, "companyName")
+                companyName.send_keys("GFCPHARMA")                    
+                applyButton.click()
+            else:
+                print("No button found")
+                applyButton.click()
+                pass
+
+
         except Exception as e:
             try:
                 applyButton.click() # try to continue to apply
+                print ("Apply button found")
             except:
                 print("Error occured : Can't apply for this job", e) # if we can't click on the button, we can't apply for this job, close the tab and go to the next one
-                self.driver.close()   
-
-
-
+                self.driver.close()         
+        
+         
         
 
 
