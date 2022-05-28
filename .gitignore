@@ -2,3 +2,5 @@ chromedriver
 chromedriver.exe
 test.py
 .idea/
+logs.txt
+listUrl.txt
