@@ -4,3 +4,5 @@ test.py
 .idea/
 logs.txt
 listUrl.txt
+__pycache__/
+.github/

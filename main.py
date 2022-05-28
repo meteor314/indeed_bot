@@ -6,6 +6,7 @@ import time
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from tomlkit import date
+from traitlets import default
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from datetime import datetime
@@ -38,8 +39,8 @@ class InitializeSelenium:
             
         }
         paths = {
-            "profile_path" : "/home/meteor314/.config/google-chrome-beta/Profile 1",
-            "binary_location" :  "/usr/bin/google-chrome-beta",
+            "profile_path" : "/home/meteor314/.config/google-chrome/Profile 4",
+            "binary_location" :  "/usr/bin/google-chrome-stable",
         }
 
         listURL = []
@@ -71,7 +72,6 @@ class InitializeSelenium:
             i=0  
             while i< len(easyApply):
                 driver.switch_to.window(driver.window_handles[-1])
-                #time.sleep(1)
 
                 # write all logs in a file
                 title = driver.title
@@ -96,7 +96,7 @@ class InitializeSelenium:
             
             
             body = driver.find_element(By.TAG_NAME, value="body")
-            body.send_keys(Keys.CONTROL + 'n')
+            body.send_keys(Keys.CONTROL + 'n') # open new tab
             driver.get(listURL[j]) 
             j+=1
 
@@ -115,21 +115,36 @@ class InitializeSelenium:
         # if it is a resume form, we need to upload a resume or we can just click on the button if we alreday registered our CV
         # if it is a job application form, we need to fill the form and click on the apply button
         applyButton = self.driver.find_element(By.CLASS_NAME, "ia-continueButton")
-        applyButtonText = applyButton.text
+        cvButton = self.driver.find_element(By.ID, "resume-display-buttonHeader")
+        availibility = self.driver.find_element(By.TAG_NAME, "textarea")
+        jobTitle = self.driver.find_element(By.ID, "jobTitle")
+        companyName = self.driver.find_element(By.ID, "companyName")
+        #availibility.send_keys("I am available from now")
+        # verify if the cv button is present in the form or not
         try :
-            match applyButtonText:
-                case "Continuer": # or continue  in english
+            match applyButton.is_displayed():
+                case cvButton.is_displayed(): # upload CV                    
+                    cvButton.click()
                     applyButton.click()
                     return True
+                case jobTitle.is_displayed(): # job application form
+                    jobTitle.send_keys("Web Developer as Trainee ")
+                    companyName.send_keys("GFCPHARMA")                    
+                    applyButton.click()
+                    return True
+                case availibility.is_displayed(): # job application form
+                    availibility.send_keys("I am available from now")
+                    applyButton.click()
+                    return True        
                 case default:
+                    print("No button found")
                     applyButton.click()
         except Exception as e:
             try:
                 applyButton.click() # try to continue to apply
             except:
                 print("Error occured : Can't apply for this job", e) # if we can't click on the button, we can't apply for this job, close the tab and go to the next one
-                self.driver.close()
-            
+                self.driver.close()   
 
 
 
