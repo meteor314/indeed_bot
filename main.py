@@ -39,8 +39,8 @@ class InitializeSelenium:
             
         }
         self.paths = {
-            "profile_path" : "/home/meteor314/.config/google-chrome/Profile 4",
-            "binary_location" :  "/usr/bin/google-chrome-stable",
+            "profile_path" : "C:/Users/thesu/AppData/Local/Google/Chrome/User Data",
+            "binary_location" :  "C:\Program Files\Google\Chrome\Application\chrome.exe",
         }
 
         self.options = Options()
@@ -68,7 +68,7 @@ class InitializeSelenium:
         # switch to new tab for apply
         j =1
         while j< len(listURL):   # loop for all url  
-
+            
             easyApply = self.driver.find_elements(By.CLASS_NAME, value="iaIcon") #link to the easy apply button
             print(len(easyApply))
             print("J : ", j)                     
