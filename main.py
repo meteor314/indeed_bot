@@ -10,9 +10,12 @@ from traitlets import default
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from datetime import datetime
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 # import Action chains 
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
+import personalInfo
 
 
 # import applyForm
@@ -83,12 +86,14 @@ class InitializeSelenium:
 
                 #Click on first button to apply
 
+                if(self.driver.find_element(By.ID, value="indeedApplyButton").is_displayed()):
+                    self.driver.find_element(By.ID, value="indeedApplyButton").click()
+                    time.sleep(2)
 
-                indeedapply = self.driver.find_element(By.ID, "indeedApplyButton")
-                indeedapply.click()
+                    # apply form
+                    self.applyForm()
+                   
 
-                # apply form
-                self.applyForm()
 
                 
 
@@ -113,48 +118,100 @@ class InitializeSelenium:
         pass
         
     
-    def applyForm(self):
-        # detect which type of form is it :
-        # if it is a resume form, we need to upload a resume or we can just click on the button if we alreday registered our CV
-        # if it is a job application form, we need to fill the form and click on the apply button
-        print ("applyForm")
+    def applyForm(self):  
+            # verify the current url and open the apply form
 
-        try :
-            if self.driver.find_element(By.CLASS_NAME, "ia-continueButton").is_displayed():
-                applyButton = self.driver.find_element(By.CLASS_NAME, "ia-continueButton")
-            
-            elif self.driver.find_element(By.ID, "resume-display-buttonHeader").is_displayed():      
-                cvButton = self.driver.find_element(By.ID, "resume-display-buttonHeader")
-
-            elif self.driver.find_element(By.TAG_NAME, "textarea").is_displayed():
-                availibility = self.driver.find_element(By.TAG_NAME, "textarea")
-                # job application form
-                availibility.send_keys("I am available from now")
-                applyButton.click()
-
-            elif self.driver.find_element(By.ID, "jobTitle").is_displayed():
-                jobTitle = self.driver.find_element(By.ID, "jobTitle")
-                # job application form
-                jobTitle.send_keys("Web Developer as Trainee ")
-                companyName = self.driver.find_element(By.ID, "companyName")
-                companyName.send_keys("GFCPHARMA")                    
-                applyButton.click()
-            else:
-                print("No button found")
-                applyButton.click()
-                pass
+            try :
+                continueButton = self.driver.find_element(By.CLASS_NAME, "ia-continueButton")
+                currentURL = self.driver.current_url
+                while continueButton.is_displayed():
+                        match (currentURL) :
+                            case "https://m5.apply.indeed.com/beta/indeedapply/form/questions/1" : # personnal question or availability
+                                try : 
+                                    print ("personnal question or availability")
+                                    if self.driver.find_element(By.TAG_NAME, "textarea").is_displayed() :
+                                        self.driver.find_element(By.TAG_NAME, "textarea").send_keys("Je suis disponile pour ce poste dès que possible")
+                                       
+                                    
+                                    continueButton.click()
+                                except Exception as e:
+                                    # continueButton does not work close this tabe and open a new one 
+                                    print("Exception : ", e)               
+                                    if (currentURL == "https://m5.apply.indeed.com/beta/indeedapply/form/questions/1") :
+                                        (self.driver.close())  
+                                        
+                                    
+                            case "https://m5.apply.indeed.com/beta/indeedapply/form/resume" : # add letter or personnal documents
+                                try :
+                                    time.sleep(2)
+                                    print ("add letter or personnal documents")
 
 
-        except Exception as e:
-            try:
-                applyButton.click() # try to continue to apply
-                print ("Apply button found")
-            except:
-                print("Error occured : Can't apply for this job", e) # if we can't click on the button, we can't apply for this job, close the tab and go to the next one
-                self.driver.close()         
-        
-         
-        
+                                    wait = WebDriverWait(self.driver, 10)
+                                    element = wait.until(EC.element_to_be_clickable((By.ID, "resume-display-buttonHeader")))
+                                    continueButton.click()
+                                except Exception as e:
+                                    print ("Error occured : " + str(e))
+                                    (self.driver.close())  
+                                    
+                                    
+                            case "https://m5.apply.indeed.com/beta/indeedapply/form/work-experience" : # work experience
+                                try :
+
+                                    time.sleep(2)
+                                    print ("work experience")
+                                    self.driver.find_element(By.ID, "jobTitle").send_keys(personalInfo.jobTitle)
+                                    self.driver.find_element(By.ID, "companyName").send_keys(personalInfo.companyName)
+                                    continueButton.click()
+                                except Exception as e:
+                                    print ("Error occured : " + str(e))
+                                    (self.driver.close())
+                                    
+                                    
+                            
+                            case "https://m5.apply.indeed.com/beta/indeedapply/form/review": # review and submit
+                                try :
+
+                                    time.sleep(2)
+                                    print ("review and submit")
+                                    goToBottomOfPage = 'window.scrollTo(0, document.documentElement.scrollHeight)'  # scroll to the bottom of the page.
+                                    self.driver.execute_script(goToBottomOfPage)
+                                    continueButton.click()
+                                except Exception as e:
+                                    print ("Error occured : " + str(e))
+                                    (self.driver.close())
+                                    
+                                    
+                                    
+
+
+                            case _: #default case
+                                print("default case")
+                                currentURL = self.driver.current_url
+                                #continueButton.click()
+
+                                time.sleep(2)
+                                # if the current url is the same after click on continue button close the tab
+                                if (currentURL == self.driver.current_url) :
+                                    (self.driver.close())
+
+
+                        continueButton = self.driver.find_element(By.CLASS_NAME, "ia-continueButton")
+
+                        currentURL = self.driver.current_url
+                                    
+                                
+                    
+            #continueButton = self.driver.find_element(By.CLASS_NAME, "ia-continueButton")
+            except Exception as e:
+                print ("Error occured : " + str(e))
+                (self.driver.close())
+                    
+                    
+                        
+
+                
+
 
 
 IndeedBot = InitializeSelenium() # create an instance of the class
