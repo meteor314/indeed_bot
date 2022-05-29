@@ -20,7 +20,6 @@ from selenium.webdriver.common.keys import Keys
 # import applyForm
 import applyForm
 
-
 class InitializeSelenium:
 
 
@@ -40,10 +39,11 @@ class InitializeSelenium:
             "profile_path" : "/home/meteor314/.config/google-chrome/Profile 4",
             "binary_location" :  "/usr/bin/google-chrome-stable",
         }
+        
 
         self.options = Options()
         self.options.binary_location = self.paths['binary_location']
-        self.options.add_argument('--no-sandbox')
+        
         self.options.add_argument("user-data-dir=" + self.paths["profile_path"] )   # Path to your chrome profile
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=self.options)
 
@@ -119,21 +119,19 @@ class InitializeSelenium:
                 while continueButton.is_displayed():
                     if "questions" in currentURL :                     
                         questionsURL = self.driver.current_url
-                        time.sleep(2)
-
-                        wait = WebDriverWait(self.driver, 10)
-                        availiable = wait.until(EC.element_to_be_clickable(By.TAG_NAME, values="textarea"))
-                        availiable.send_keys(personalInfo.availability)
-
-                        time.sleep(2)
+                        time.sleep(2)                   
 
                         continueButton.click()
+
+                        time.sleep(2)
+
                         continueButton = self.driver.find_element(By.CLASS_NAME, "ia-continueButton")
                         currentURL = self.driver.current_url
                         #verify the current url, if the currentURL is same as the questionsURL, then the form contains some obligatory fields, we can close the tab and continue to another job
                         if questionsURL == currentURL:
                             self.driver.close()
                             self.driver.switch_to.window(self.driver.window_handles[-1])
+                            print (questionsURL + " : " + currentURL)
                             break
                     elif "resume" in currentURL :
                         time.sleep(2)
@@ -154,18 +152,14 @@ class InitializeSelenium:
                         goToBottomOfPage = 'window.scrollTo(0, document.documentElement.scrollHeight)'  # scroll to the bottom of the page.
                         self.driver.execute_script(goToBottomOfPage)
                         continueButton.click()
+                        time.sleep(2)
 
                         # write all logs in a file
                         title = self.driver.title
                         url = self.driver.current_url
                         self.write_logs(url, title) 
-
-
-
-                        time.sleep(2)
-                        continueButton = self.driver.find_element(By.CLASS_NAME, "ia-continueButton") 
-                        currentURL = self.driver.current_url
-
+                        self.driver.close()
+                        self.driver.switch_to.window(self.driver.window_handles[-1])
                     else :
                         continueButton.click()
 
@@ -178,8 +172,18 @@ class InitializeSelenium:
                     
             #continueButton = self.driver.find_element(By.CLASS_NAME, "ia-continueButton")
             except Exception as e:
-                print ("Error occured : " + str(e))
-                (self.driver.close())
+
+                continueButton.click()
+                URL = self.driver.current_url
+
+                time.sleep(2)
+                continueButton = self.driver.find_element(By.CLASS_NAME, "ia-continueButton")
+                currentURL = self.driver.current_url
+                time.sleep(2)
+                URL2 = self.driver.current_url
+                if URL == URL2:
+                    print ("Error occured : " + str(e))
+                    (self.driver.close())
                     
                     
                         
