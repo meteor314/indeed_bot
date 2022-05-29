@@ -1,5 +1,5 @@
 <div align="center">  <h1 style="font-size:30px" >indeed-bot <br />  
-<img src="https://raw.githubusercontent.com/meteor314/indeed_bot/master/img/icon.jpg" width="48px" height="48px"> </h1>  </div>  
+<img src="https://i.imgur.com/Efe7f9w.png" width="48px" height="48px"> </h1>  </div>  
 <p align="center">a tool that applies for you.  
 </p>  
 <img src="img/indeed.gif" width='100%'>
