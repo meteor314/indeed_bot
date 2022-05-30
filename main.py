@@ -89,8 +89,7 @@ class InitializeSelenium:
         while j< len(listURL):   # loop for all url  
 
             easyApply = self.driver.find_elements(By.CLASS_NAME, value="iaIcon") #link to the easy apply button
-            print(len(easyApply))
-            print("J : ", j)                     
+            print("Apply with indeed available in this page : ", len(easyApply))                     
             for e in easyApply:
                 # right click and open link in new tab
                 ActionChains(self.driver).context_click(e).key_down(Keys.CONTROL).click(e).perform()  
@@ -153,7 +152,7 @@ class InitializeSelenium:
                         if questionsURL == currentURL:
                             self.driver.close()
                             self.driver.switch_to.window(self.driver.window_handles[-1])
-                            print (questionsURL + " : " + currentURL)
+                            print("mandatory fields, can not continue, switch to another job ...")
                             break
                     elif "resume" in currentURL :
                         time.sleep(2)
@@ -184,6 +183,8 @@ class InitializeSelenium:
                         time.sleep(2)
                         self.driver.close()
                         self.driver.switch_to.window(self.driver.window_handles[-1])
+
+                        time.sleep(2)
                         print("Apply send :)")
 
                         break
