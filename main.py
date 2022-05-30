@@ -57,8 +57,8 @@ class InitializeSelenium:
             
         }
         self.paths = {
-            "profile_path" : "C:/Users/thesu/AppData/Local/Google/Chrome/User Data",
-            "binary_location" :  "C:\Program Files\Google\Chrome\Application\chrome.exe"
+            "profile_path" : "/home/meteor314/.config/google-chrome/Profile 4",
+            "binary_location" :  "/opt/google/chrome/google-chrome"
         }
         
 
@@ -174,16 +174,19 @@ class InitializeSelenium:
                         print ("review and submit")
                         goToBottomOfPage = 'window.scrollTo(0, document.documentElement.scrollHeight)'  # scroll to the bottom of the page.
                         self.driver.execute_script(goToBottomOfPage)
-                        #continueButton.click()
-                        print("candidature envoyé")
-                        time.sleep(2)
+                        continueButton.click()
 
                         # write all logs in a file
                         title = self.driver.title
                         url = self.infoUrl
                         self.write_logs(url, title) 
+
+                        time.sleep(2)
                         self.driver.close()
                         self.driver.switch_to.window(self.driver.window_handles[-1])
+                        print("Apply send :)")
+
+                        break
                     else :
                         continueButton.click()
 
