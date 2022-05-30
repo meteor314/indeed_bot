@@ -2,19 +2,15 @@
 
 """
 MIT License
-
 Copyright (c) 2021 meteor314
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,7 +18,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
 """
 from multiprocessing.connection import wait
 from optparse import Values
@@ -49,6 +44,7 @@ class InitializeSelenium:
 
 
     def __init__(self):
+        self.infoUrl =""
         self.now = datetime.now()   # current date and time         
         # dd/mm/YY H:M:S
         self.dt_string = self.now.strftime("%d/%m/%Y %H:%M:%S")  
@@ -62,7 +58,7 @@ class InitializeSelenium:
         }
         self.paths = {
             "profile_path" : "C:/Users/thesu/AppData/Local/Google/Chrome/User Data",
-            "binary_location" :  "C:\Program Files\Google\Chrome\Application\chrome.exe",
+            "binary_location" :  "C:\Program Files\Google\Chrome\Application\chrome.exe"
         }
         
 
@@ -91,7 +87,7 @@ class InitializeSelenium:
         # switch to new tab for apply
         j =1
         while j< len(listURL):   # loop for all url  
-            
+
             easyApply = self.driver.find_elements(By.CLASS_NAME, value="iaIcon") #link to the easy apply button
             print(len(easyApply))
             print("J : ", j)                     
@@ -108,6 +104,7 @@ class InitializeSelenium:
                 #Click on first button to apply
 
                 if(self.driver.find_element(By.ID, value="indeedApplyButton").is_displayed()):
+                    self.infoUrl = self.driver.current_url
                     self.driver.find_element(By.ID, value="indeedApplyButton").click()
                     time.sleep(2)
 
@@ -130,7 +127,7 @@ class InitializeSelenium:
     # write all logs in a file 
     def write_logs(self, url, title ):
         f = open("logs.txt", "a")
-        f.write(title + "," + url + "," + self.dt_string + "\n") 
+        f.write(title + " , " + url + " , " + self.dt_string + "\n") 
         f.close()
         pass
         
@@ -163,25 +160,27 @@ class InitializeSelenium:
 
                         print ("add letter or personnal documents")
                         wait = WebDriverWait(self.driver, 10)
-                        cvButton = wait.until(EC.element_to_be_clickable((By.ID, "resume-display-buttonHeader")))
-                        cvButton.click()
+                        #cvButton = wait.until(EC.element_to_be_clickable((By.ID, "resume-display-buttonHeader")))
+                        #cvButton.click()
                         continueButton.click()
 
                         time.sleep(2)
                         continueButton = self.driver.find_element(By.CLASS_NAME, "ia-continueButton")
                         currentURL = self.driver.current_url
+                        
 
                     elif "review" in currentURL: # review
                         time.sleep(2)
                         print ("review and submit")
                         goToBottomOfPage = 'window.scrollTo(0, document.documentElement.scrollHeight)'  # scroll to the bottom of the page.
                         self.driver.execute_script(goToBottomOfPage)
-                        continueButton.click()
+                        #continueButton.click()
+                        print("candidature envoyé")
                         time.sleep(2)
 
                         # write all logs in a file
                         title = self.driver.title
-                        url = self.driver.current_url
+                        url = self.infoUrl
                         self.write_logs(url, title) 
                         self.driver.close()
                         self.driver.switch_to.window(self.driver.window_handles[-1])
@@ -192,7 +191,7 @@ class InitializeSelenium:
                         continueButton = self.driver.find_element(By.CLASS_NAME, "ia-continueButton")
                         currentURL = self.driver.current_url
                         time.sleep(2)
-                              
+                    
                                 
                     
             #continueButton = self.driver.find_element(By.CLASS_NAME, "ia-continueButton")
