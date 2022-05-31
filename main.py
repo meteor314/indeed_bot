@@ -68,8 +68,16 @@ class InitializeSelenium:
         self.options.add_argument("user-data-dir=" + self.paths["profile_path"] )   # Path to your chrome profile
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=self.options)
 
-        pass   
+        pass 
 
+    # verify if we find JSON web token, if yes, we apply else user is not connected yet, send an alert with JS to the user.
+    def isConnected (self):
+        isConnected = False if self.driver.get_cookie("PPID") == None else True
+        if not isConnected:
+            self.driver.execute_script("alert('Please connect to Indeed first. Do not Forget to upload your CV and restrat this program :>')")
+            time.sleep(73)
+            self.driver.quit()
+       
 
     def  initialize_selenium(self):
         
@@ -82,6 +90,10 @@ class InitializeSelenium:
 
         self.driver.get(listURL[0]) # go to the first link of the list
         self.driver.maximize_window() 
+        self.driver.implicitly_wait(10)
+
+        # verify if the user is connected to indeed
+        self.isConnected()
         
         resumecount=0
         # switch to new tab for apply
