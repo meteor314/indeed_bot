@@ -49,7 +49,7 @@ class InitializeSelenium:
         # dd/mm/YY H:M:S
         self.dt_string = self.now.strftime("%d/%m/%Y %H:%M:%S")  
         self.searchOptions = {
-            "q" : "devops",
+            "q" : "full stack web développeur",
             "l" : "Île-de-France",
             "start" : 0,
             "jt" : "apprenticeship",
@@ -82,7 +82,7 @@ class InitializeSelenium:
         print(login_status)          
 
         if not  login_status:
-            self.driver.execute_script("alert('Please connect to Indeed first. Do not Forget to upload your CV and restrat this program :>')")
+            self.driver.execute_script("alert('Please connect to Indeed first. Do not Forget to upload your CV and restart this program :>')")
             print ('User is not connected :')
             time.sleep(120)
             self.driver.quit()
@@ -103,7 +103,8 @@ class InitializeSelenium:
 
 
         # verify if the user is connected to indeed
-        self.isConnected()       
+        #no need to verfiy indeed will ask 
+        #self.isConnected()       
 
         resumecount=0
         # switch to new tab for apply
