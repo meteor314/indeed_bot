@@ -76,7 +76,6 @@ class InitializeSelenium:
         # {'domain': '.indeed.com', 'expiry': 1687703185, 'httpOnly': True, 'name': 'PPID', 'path': '/', 'sameSite': 'None', 'secure': True, 'value': '""'}
         login_status = False
         for cookie in cookies :
-            print(cookies["value"])
             if not cookies["value"] == '\"\"': #check if the value is diffrent from 'value': '""'
                 login_status =  True
                 break
@@ -181,10 +180,23 @@ class InitializeSelenium:
                         time.sleep(2)
 
 
-                        print ("add letter or personnal documents")
+                        print ("add Cv")
                         wait = WebDriverWait(self.driver, 10)
                         cvButton = wait.until(EC.element_to_be_clickable((By.ID, "resume-display-buttonHeader")))
                         cvButton.click()
+                        continueButton.click()
+
+                        time.sleep(2)
+                        continueButton = self.driver.find_element(By.CLASS_NAME, "ia-continueButton")
+                        currentURL = self.driver.current_url
+                    elif "documents" in currentURL :
+                        time.sleep(2)
+
+
+                        print ("add Cv")
+                        wait = WebDriverWait(self.driver, 10)
+                        textarea = wait.until(EC.element_to_be_clickable((By.TAG_NAME, "textarea"))).send_keys("")
+                        time.sleep(3)
                         continueButton.click()
 
                         time.sleep(2)
@@ -197,6 +209,7 @@ class InitializeSelenium:
                         print ("review and submit")
                         goToBottomOfPage = 'window.scrollTo(0, document.documentElement.scrollHeight)'  # scroll to the bottom of the page.
                         self.driver.execute_script(goToBottomOfPage)
+                        time.sleep(2)
                         continueButton.click()
 
                         # write all logs in a file
@@ -212,6 +225,10 @@ class InitializeSelenium:
                         print("Apply send :)")
 
                         break
+                    elif "postresumeapply" in currentURL :
+                        time.sleep(2)
+                        self.driver.close()
+                        self.driver.switch_to.window(self.driver.window_handles[-1])                        
                     else :
                         continueButton.click()
 
