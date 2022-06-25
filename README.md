@@ -30,7 +30,7 @@ You need to configure search options for your profile. You can change this varia
 self.searchOptions = 
 {  
 	 "q" : "informatique", # domain of search 
-	 "l" : "Île-de-France", # Area, For exemple Paris, France 
+	 "l" : "Paris", # Area, For exemple Paris, France 
 	 "start" : 0, 
 	 # starting page, by default one page contains 10 jobs 
 	 "jt" : "apprenticeship", # type of job, trainee, apprenticeship etc... 
@@ -52,6 +52,25 @@ self.paths = {
 ***If you launch it for first time, just make sure you 're already connected, don't forget to add your CV on your profile indeed.***
 
 You can find all logs where the bots applies in logs files.
+
+## Issue
+If you're getting error like this :  there is an instance of chrome is open. You have to **quit** chrome and then restart the program
+```sh
+  File "/home/meteor314/Desktop/indeed_bot/main.py", line 236, in <module>
+    IndeedBot.initialize_selenium() # call the method
+  File "/home/meteor314/Desktop/indeed_bot/main.py", line 91, in initialize_selenium
+    self.driver.get(listURL[0]) # go to the first link of the list
+  File "/home/meteor314/.local/lib/python3.10/site-packages/selenium/webdriver/remote/webdriver.py", line 442, in get
+    self.execute(Command.GET, {'url': url})
+  File "/home/meteor314/.local/lib/python3.10/site-packages/selenium/webdriver/remote/webdriver.py", line 430, in execute
+    self.error_handler.check_response(response)
+  File "/home/meteor314/.local/lib/python3.10/site-packages/selenium/webdriver/remote/errorhandler.py", line 247, in check_response
+    raise exception_class(message, screen, stacktrace)
+selenium.common.exceptions.WebDriverException: Message: unknown error: unexpected command response
+  (Session info: chrome=103.0.5060.53)
+Stacktrace:
+#0 0x561c999ffb13 <unknown>
+```
 
 ## License
 

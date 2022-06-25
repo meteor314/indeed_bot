@@ -49,7 +49,7 @@ class InitializeSelenium:
         # dd/mm/YY H:M:S
         self.dt_string = self.now.strftime("%d/%m/%Y %H:%M:%S")  
         self.searchOptions = {
-            "q" : "informatique",
+            "q" : "devops",
             "l" : "Île-de-France",
             "start" : 0,
             "jt" : "apprenticeship",
@@ -67,20 +67,31 @@ class InitializeSelenium:
         
         self.options.add_argument("user-data-dir=" + self.paths["profile_path"] )   # Path to your chrome profile
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=self.options)
-
+        #time.sleep(75)
         pass 
 
     # verify if we find JSON web token, if yes, we apply else user is not connected yet, send an alert with JS to the user.
     def isConnected (self):
-        isConnected = False if self.driver.get_cookie("PPID") == None else True
-        if not isConnected:
+        cookies = self.driver.get_cookie("PPID") # returns list of dicts
+        print(cookies)
+        # {'domain': '.indeed.com', 'expiry': 1687703185, 'httpOnly': True, 'name': 'PPID', 'path': '/', 'sameSite': 'None', 'secure': True, 'value': '""'}
+        login_status = False
+        for cookie in cookies :
+            print(cookies["value"])
+            if not cookies["value"] == '\"\"': #check if the value is diffrent from 'value': '""'
+                login_status =  True
+                break
+        print(login_status)          
+
+        if not  login_status:
             self.driver.execute_script("alert('Please connect to Indeed first. Do not Forget to upload your CV and restrat this program :>')")
-            time.sleep(73)
+            print ('User is not connected :')
+            time.sleep(120)
             self.driver.quit()
        
 
     def  initialize_selenium(self):
-        
+     
         listURL = []
         i = self.searchOptions["start"]
         while i <= self.searchOptions["end"]:
@@ -92,9 +103,10 @@ class InitializeSelenium:
         self.driver.maximize_window() 
         self.driver.implicitly_wait(10)
 
+
         # verify if the user is connected to indeed
-        self.isConnected()
-        
+        self.isConnected()       
+
         resumecount=0
         # switch to new tab for apply
         j =1
