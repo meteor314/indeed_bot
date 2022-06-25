@@ -73,7 +73,6 @@ class InitializeSelenium:
     # verify if we find JSON web token, if yes, we apply else user is not connected yet, send an alert with JS to the user.
     def isConnected (self):
         cookies = self.driver.get_cookie("PPID") # returns list of dicts
-        print(cookies)
         # {'domain': '.indeed.com', 'expiry': 1687703185, 'httpOnly': True, 'name': 'PPID', 'path': '/', 'sameSite': 'None', 'secure': True, 'value': '""'}
         login_status = False
         for cookie in cookies :
@@ -181,10 +180,11 @@ class InitializeSelenium:
                     elif "resume" in currentURL :
                         time.sleep(2)
 
+
                         print ("add letter or personnal documents")
                         wait = WebDriverWait(self.driver, 10)
-                        #cvButton = wait.until(EC.element_to_be_clickable((By.ID, "resume-display-buttonHeader")))
-                        #cvButton.click()
+                        cvButton = wait.until(EC.element_to_be_clickable((By.ID, "resume-display-buttonHeader")))
+                        cvButton.click()
                         continueButton.click()
 
                         time.sleep(2)
