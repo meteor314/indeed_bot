@@ -54,7 +54,7 @@ self.paths = {
 You can find all logs where the bots applies in logs files.
 
 ## Issue
-If you're getting error like this :  there is an instance of chrome is open. You have to **quit** chrome and then restart the program
+If you're getting error like this :  there is an instance of chrome is open. You have to **quit** chrome and then restart the program.
 ```sh
   File "/home/meteor314/Desktop/indeed_bot/main.py", line 236, in <module>
     IndeedBot.initialize_selenium() # call the method
@@ -71,6 +71,10 @@ selenium.common.exceptions.WebDriverException: Message: unknown error: unexpecte
 Stacktrace:
 #0 0x561c999ffb13 <unknown>
 ```
+
+For more information, you can visit this github issue :
+[https://github.com/SeleniumHQ/selenium/issues/10799](https://github.com/SeleniumHQ/selenium/issues/10799)
+
 
 ## License
 

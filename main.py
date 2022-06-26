@@ -49,7 +49,7 @@ class InitializeSelenium:
         # dd/mm/YY H:M:S
         self.dt_string = self.now.strftime("%d/%m/%Y %H:%M:%S")  
         self.searchOptions = {
-            "q" : "full stack web développeur",
+            "q" : "developper",
             "l" : "Île-de-France",
             "start" : 0,
             "jt" : "apprenticeship",
@@ -242,7 +242,7 @@ class InitializeSelenium:
                     
             #continueButton = self.driver.find_element(By.CLASS_NAME, "ia-continueButton")
             except Exception as e:
-
+                continueButton = self.driver.find_element(By.CLASS_NAME, "ia-continueButton")
                 continueButton.click()
                 URL = self.driver.current_url
 
