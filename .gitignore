@@ -7,3 +7,8 @@ listUrl.txt
 __pycache__/
 .github/
 personalInfo.py
+node_modules/
+package-lock.json
+dist/
+build/
+appliedJobs.csv

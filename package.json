@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "electron": "^33.0.2",
+    "mysql": "^2.18.1"
+  },
+  "scripts": {
+    "start": "electron dist/main.js",
+    "dev": "nodemon index.js"
+  },
+  "module": "commonjs",
+  "devDependencies": {
+    "@types/electron": "^1.4.38",
+    "@types/node": "^22.7.9",
+    "typescript": "^5.6.3"
+  }
+}
