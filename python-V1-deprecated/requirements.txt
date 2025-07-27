@@ -1,4 +1,0 @@
-selenium >=  4.1.5
-webdriver_manager
-traitlets
-tomlkit
