@@ -101,6 +101,85 @@ This guide explains how to use this bot. Use at your own risk. Indeed may change
 
 ---
 
+## Modern setup with uv (recommended)
+
+If you prefer modern dependency management via `pyproject.toml`, this project supports [uv](https://github.com/astral-sh/uv):
+
+```bash
+# Install deps (creates .venv)
+uv sync
+
+# Run the full app (paginated, two passes)
+uv run -m app
+
+# Or run the legacy shim
+uv run python indeed_bot.py
+
+# Minimal single-page run
+uv run python indeed_bot_min.py
+```
+
+Notes:
+- Dependencies are defined in `pyproject.toml` (no requirements.txt needed).
+- First launch may take longer as Camoufox initializes.
+
+---
+
+## Project structure (modular)
+
+```
+indeed_bot/
+├─ app/
+│  ├─ main.py                # Entry point (module: app)
+│  ├─ models/
+│  │  └─ config.py           # Pydantic config models + AppConfig.load()
+│  └─ utils/
+│     ├─ indeed.py           # domain_for_language, collect links, apply, click helper
+│     ├─ logging_utils.py    # setup_logger()
+│     ├─ pagination.py       # paginate_urls()
+│     └─ login.py            # ensure_ppid_cookie()
+├─ indeed_bot.py             # Thin shim -> app.main.run()
+├─ indeed_bot_min.py         # Minimal single-page runner
+├─ config.yaml               # User config
+├─ pyproject.toml            # Dependencies and project metadata
+└─ README.md
+```
+
+Key changes:
+- Config parsing/validation moved to Pydantic models in `app/models/config.py`.
+- Browser actions and page scraping in `app/utils/` for reusability and testing.
+- Main control flow in `app/main.py` with graceful shutdown and timeouts.
+
+---
+
+## Configuration tips
+
+- Use a local, non-synced profile directory to avoid locks on Windows:
+  ```yaml
+  camoufox:
+    user_data_dir: "C:\\camoufox_profile"
+    language: "us"
+  ```
+  Create it once if needed:
+  - PowerShell: `New-Item -ItemType Directory -Force C:\camoufox_profile`
+  - Git Bash: `mkdir -p /c/camoufox_profile`
+
+- First run will prompt for login if the PPID cookie is missing. The app will open the login page and poll for your session.
+
+---
+
+## Minimal run
+
+For a quick sanity check against a single results page:
+
+```bash
+uv run python indeed_bot_min.py
+```
+
+This uses the same modular utilities, but only visits `search.base_url` without pagination.
+
+---
+
 ## Troubleshooting
 
 - If the bot gets stuck or fails to apply:
