@@ -32,3 +32,6 @@ package = false
 [tool.hatch.build.targets.wheel]
 # Ensure hatch can build if needed by including our packages
 packages = ["app"]
+
+[tool.uv.dependency-groups]
+dev = ["pytest"]
