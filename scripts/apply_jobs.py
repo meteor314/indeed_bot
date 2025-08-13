@@ -28,7 +28,16 @@ def main(argv: Optional[list[str]] = None) -> int:
     cfg = AppConfig.load(args.config)
     language = cfg.camoufox.language
 
-    with Camoufox(user_data_dir=cfg.camoufox.user_data_dir, persistent_context=True) as browser:
+    proxy_kwargs = {}
+    if getattr(cfg.camoufox, "proxy_server", None):
+        proxy_conf = {"server": cfg.camoufox.proxy_server}
+        if getattr(cfg.camoufox, "proxy_username", None):
+            proxy_conf["username"] = cfg.camoufox.proxy_username
+        if getattr(cfg.camoufox, "proxy_password", None):
+            proxy_conf["password"] = cfg.camoufox.proxy_password
+        proxy_kwargs["proxy"] = proxy_conf
+
+    with Camoufox(user_data_dir=cfg.camoufox.user_data_dir, persistent_context=True, **proxy_kwargs) as browser:
         logger = setup_logger()
         page = browser.new_page()
 

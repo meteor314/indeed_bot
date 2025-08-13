@@ -22,8 +22,13 @@ dependencies = [
 Homepage = "https://github.com/TechWithTy/indeed_bot"
 
 [tool.uv]
-# No special configuration needed; present for future customizations.
+# Avoid installing this project as an editable package; run files directly.
+package = false
 
-[tool.uv.scripts]
-# One-shot test runner: sync deps, then run pytest without adding it as a permanent dep
-tests = "bash -lc 'uv sync && uv run --with pytest -m pytest -q'"
+# To run tests, use:
+#   uv sync
+#   uv run --with pytest -m pytest -q
+
+[tool.hatch.build.targets.wheel]
+# Ensure hatch can build if needed by including our packages
+packages = ["app"]

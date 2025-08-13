@@ -17,6 +17,12 @@ class SearchConfig(BaseModel):
 class CamoufoxConfig(BaseModel):
     user_data_dir: str = Field(..., description="Directory for Camoufox user data")
     language: str = Field("us", description="Locale/country code, e.g. us, uk, fr")
+    proxy_server: Optional[str] = Field(
+        None,
+        description="Proxy server URL, e.g. http://host:port or socks5://host:port",
+    )
+    proxy_username: Optional[str] = Field(None, description="Proxy username")
+    proxy_password: Optional[str] = Field(None, description="Proxy password")
 
 
 class AppConfig(BaseModel):
