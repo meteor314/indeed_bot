@@ -1,66 +1,197 @@
-<div align="center">  <h1 style="font-size:30px" >indeed-bot <br />  
-<img src="https://i.imgur.com/Efe7f9w.png" width="48px" height="48px"> </h1>  </div>  
-<p align="center">a tool that applies for you.  
-</p>  
-<img src="img/indeed.gif" width='100%'>
+# Indeed Auto-Apply Bot
 
-### How does this work?
+**WARNING:**  
+This guide explains how to use this bot. Use at your own risk. Indeed may change their website or introduce new protections (such as captchas or anti-bot measures) at any time, which could break this tool or result in your account being restricted. This is for educational purposes only.
 
-This is a python script. It scape indeed.com a and and depending on your chosen parameters, he will be able to apply for you
+---
 
-## Requirements
+## Features
 
-* **selenium**
-* **chromedriver or firefox driver**
-* **pip and python3**
+- Automatically finds and applies to jobs on Indeed with "Indeed Apply" .
+- Uses Camoufox for browser automation (bypass Cloudfare, Captch bot)
+- Handles multi-step application forms, including resume upload and personal info.
 
-If you have aldreay pip installed,  you can just copy and paste this commad :
+## Prerequisites
 
-## Installation
+- Python 3.8+
+- [Camoufox](https://github.com/meteor314/camoufox) installed and configured
+- An Indeed account with:
+  - Your CV already uploaded
+  - Your name, address, and phone number filled in your Indeed profile
 
-```sh
-pip install -r requirements.txt
+---
+
+## Setup
+
+1. **Clone this repository** and install dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+2. **Edit `config.yaml`:**
+
+    Example:
+    ```yaml
+    camoufox:
+      user_data_dir: "user_data_dir" # by default, no need to change this value
+      language: "fr"  # or "uk", "de", etc. make sure to update this value
+
+    search:
+      base_url: "https://fr.indeed.com/jobs?q=python+developer&l=Paris"
+      start: 0
+      end: 100
+    ```
+
+    - `user_data_dir`: Path to your Chrome user data directory (to keep your Indeed session).
+    - `language`: Your Indeed site language code (e.g., "fr" for France, "uk" for United Kingdom) etc..
+    - `base_url`: The Indeed search URL for your job search.
+    - `start`/`end`: Pagination range (should be multiples of 10).
+
+3. **How to get your `base_url`:**
+
+    - Go to [Indeed](https://www.indeed.com/) in your browser.
+    - Select your search options (job title, location, remote working, type of work, etc.).
+    - Click on **Find jobs**.
+    - Copy the URL from your browser's address bar.
+    - Paste this URL as the value for `base_url` in your `config.yaml`.
+
+    ![How to get your base_url](assets/Readme.png)
+
+4. **Upload your CV to Indeed:**
+    - Go to your Indeed profile and upload your CV.
+    - Make sure your name, address, and phone number are filled in. 
+    - This bot will use this information to apply for jobs. So make sure they are filled in correctly otherwise the bot will not be able to apply for jobs.
+
+---
+
+## First Run
+
+1. **Login to Indeed manually:**
+    - Run the bot:
+      ```bash
+      python indeed_bot.py
+      ```
+    - If not logged in, the bot will open Indeed and prompt you to log in manually.
+    - After logging in, close the bot and restart it.
+
+2. **Run the bot again:**
+    - The bot will now use your saved session to search and apply for jobs. 
+    - All your session data (cookies, login info) will be preserved in the `user_data_dir` specified in `config.yaml`.
+
+
+## Usage
+
+- The bot will:
+  - Visit each search results page.
+  - Collect all jobs with "Indeed Apply".
+  - For each job:
+    - Open the job page in a new tab.
+    - Click "Apply" or "Postuler maintenant".
+    - Step through the application wizard, selecting your uploaded CV and clicking "Continue"/"Submit".
+    - Log the result in `indeed_apply.log`.
+
+
+## Notes & Limitations
+
+- This bot only works for jobs with "Indeed Apply" (Candidature simplifiée).
+- If you encounter captchas or anti-bot protections, this bot should handle them automatically, but you may need to solve them manually.
+- Indeed may change their website at any time, which could break this bot.
+- Use responsibly and do not spam applications.
+- This program is a guide on how to automate job applications,  you need to make some modifications to the code to make it work for your needs.
+
+---
+
+## Modern setup with uv (recommended)
+
+If you prefer modern dependency management via `pyproject.toml`, this project supports [uv](https://github.com/astral-sh/uv):
+
+```bash
+# Install deps (creates .venv)
+uv sync
+
+# Run the full app (paginated, two passes)
+uv run -m app
+
+# Or run the legacy shim
+uv run python indeed_bot.py
+
+# Minimal single-page run
+uv run python indeed_bot_min.py
 ```
 
-# Configuration ?
+Notes:
+- Dependencies are defined in `pyproject.toml` (no requirements.txt needed).
+- First launch may take longer as Camoufox initializes.
 
-You need to configure search options for your profile. You can change this variable directly in main.py.
+---
 
-```python
-self.searchOptions = 
-{  
-	 "q" : "informatique", # domain of search 
-	 "l" : "Île-de-France", # Area, For exemple Paris, France 
-	 "start" : 0, 
-	 # starting page, by default one page contains 10 jobs 
-	 "jt" : "apprenticeship", # type of job, trainee, apprenticeship etc... 
-	 "end" : 100       
- }  
+## Project structure (modular)
+
+```
+indeed_bot/
+├─ app/
+│  ├─ main.py                # Entry point (module: app)
+│  ├─ models/
+│  │  └─ config.py           # Pydantic config models + AppConfig.load()
+│  └─ utils/
+│     ├─ indeed.py           # domain_for_language, collect links, apply, click helper
+│     ├─ logging_utils.py    # setup_logger()
+│     ├─ pagination.py       # paginate_urls()
+│     └─ login.py            # ensure_ppid_cookie()
+├─ indeed_bot.py             # Thin shim -> app.main.run()
+├─ indeed_bot_min.py         # Minimal single-page runner
+├─ config.yaml               # User config
+├─ pyproject.toml            # Dependencies and project metadata
+└─ README.md
 ```
 
-You also need to define your chrome executable and path access. You can find all this information here : **chrome://version**
+Key changes:
+- Config parsing/validation moved to Pydantic models in `app/models/config.py`.
+- Browser actions and page scraping in `app/utils/` for reusability and testing.
+- Main control flow in `app/main.py` with graceful shutdown and timeouts.
 
-![Copy your profile path](https://imgur.com/N1WqtcX.pnghttps://i.imgur.com/Qp3GQRk.png)
+---
 
-```python
-self.paths = {  
- "profile_path" : "/home/meteor314/.config/google-chrome/Profile 4", 
- "binary_location" :  "/opt/google/chrome/google-chrome-stable", 
- }  
+## Configuration tips
+
+- Use a local, non-synced profile directory to avoid locks on Windows:
+  ```yaml
+  camoufox:
+    user_data_dir: "C:\\camoufox_profile"
+    language: "us"
+  ```
+  Create it once if needed:
+  - PowerShell: `New-Item -ItemType Directory -Force C:\camoufox_profile`
+  - Git Bash: `mkdir -p /c/camoufox_profile`
+
+- First run will prompt for login if the PPID cookie is missing. The app will open the login page and poll for your session.
+
+---
+
+## Minimal run
+
+For a quick sanity check against a single results page:
+
+```bash
+uv run python indeed_bot_min.py
 ```
 
-***If you launch it for first time, just make sure you 're already connected, don't forget to add your CV on your profile indeed.***
+This uses the same modular utilities, but only visits `search.base_url` without pagination.
 
-You can find all logs where the bots applies in logs files.
+---
+
+## Troubleshooting
+
+- If the bot gets stuck or fails to apply:
+  - Check `indeed_apply.log` for errors.
+  - Make sure your CV and personal info are uploaded to Indeed.
+  - Try increasing wait times if your internet is slow.
+
+---
+
+## Disclaimer
+
+This project is not affiliated with Indeed. Use at your own risk.
 
 ## License
-
-This project is licensed under [MIT](https://raw.githubusercontent.com/meteor314/indeed_bot/master/LICENSE).
-
-### Alert
-
-I am not responsible if your account is banned, you are responsible for your account. The developers of this bot are not responsible for its misuse
-
-#### If you encounter a bug, don't hesitate to open an issue, and any help will be welcome ^_^
-
-Many thanks to [@dalek63](https://github.com/dalek63) for his help, without help, this project would never have got off the ground.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details

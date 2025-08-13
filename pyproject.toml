@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling>=1.26.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "indeed-bot"
+version = "0.1.0"
+description = "Indeed Auto-Apply Bot powered by Camoufox"
+readme = "README.md"
+authors = [
+  { name = "meteor314" }
+]
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+dependencies = [
+  "camoufox",
+  "PyYAML",
+  "pydantic>=2",
+]
+
+[project.urls]
+Homepage = "https://github.com/TechWithTy/indeed_bot"
+
+[tool.uv]
+# Avoid installing this project as an editable package; run files directly.
+package = false
+
+# To run tests, use:
+#   uv sync
+#   uv run --with pytest -m pytest -q
+
+[tool.hatch.build.targets.wheel]
+# Ensure hatch can build if needed by including our packages
+packages = ["app"]
+
+[tool.uv.dependency-groups]
+dev = ["pytest"]
