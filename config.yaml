@@ -10,7 +10,7 @@ search:
 
 camoufox:
   user_data_dir: "user_data_dir"
-  language: "fr" # uk, us, fr, de, es, it, nl, pt, pl, ro, tr, ru, cn etc...
+  language: "en" # uk, us, fr, de, es, it, nl, pt, pl, ro, tr, ru, cn etc...
 
 
 
