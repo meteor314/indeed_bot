@@ -25,6 +25,25 @@ user_data_dir = camoufox_config.get("user_data_dir")
 language = camoufox_config.get("language")
 
 
+def domain_for_language(lang: str) -> str:
+    """Return the appropriate Indeed domain for a given language/locale code.
+
+    Examples:
+      - 'en' or 'us' -> 'www.indeed.com'
+      - 'uk'         -> 'uk.indeed.com'
+      - 'fr'         -> 'fr.indeed.com'
+    Fallback: f"{lang}.indeed.com"
+    """
+    if not lang:
+        return "www.indeed.com"
+    lang = str(lang).lower()
+    if lang in ("en", "us"):
+        return "www.indeed.com"
+    if lang == "uk":
+        return "uk.indeed.com"
+    return f"{lang}.indeed.com"
+
+
 def collect_indeed_apply_links(page, language):
     """Collect all 'Indeed Apply' job links from the current search result page."""
     links = []
@@ -37,7 +56,7 @@ def collect_indeed_apply_links(page, language):
                 job_url = link.get_attribute('href')
                 if job_url:
                     if job_url.startswith('/'):
-                        job_url = f"https://{language}.indeed.com{job_url}"
+                        job_url = f"https://{domain_for_language(language)}{job_url}"
                     links.append(job_url)
     return links
 
@@ -179,7 +198,8 @@ with Camoufox(user_data_dir=user_data_dir,
               persistent_context=True) as browser:
     logger = setup_logger()
     page = browser.new_page()
-    page.goto("https://" + language + ".indeed.com")
+    base_domain = domain_for_language(language)
+    page.goto("https://" + base_domain)
 
     cookies = page.context.cookies()
     ppid_cookie = next(
@@ -188,8 +208,10 @@ with Camoufox(user_data_dir=user_data_dir,
         print("Token not found, please log in to Indeed first.")
         print("Redirecting to login page...")
         print("You need  to restart the bot after logging in.")
+        # Ensure 'hl' is a valid code; default to 'en' for English locales
+        hl = "en" if str(language).lower() in ("en", "us", "uk") else str(language).lower()
         page.goto(
-            "https://secure.indeed.com/auth?hl=" + language)
+            "https://secure.indeed.com/auth?hl=" + hl)
         time.sleep(1000)  # wait for manual login
     else:
         print("Token found, proceeding with job search...")

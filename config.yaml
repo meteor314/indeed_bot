@@ -3,14 +3,14 @@
 
 
 search:
-  base_url: "https://fr.indeed.com/jobs?q=developer&l=Ile-de-France&sc=0kf%3Aattr%285QWDV%29%3B&radius=25"
+  base_url: "https://www.indeed.com/jobs?q=forklift%20operator&latLong=39.83442%2C-105.00954&locString=Denver%2C%20CO%2C%2080221"
 
   start: 0
   end: 100 # default is 100, you can set it to 1000 or more for larger searches (not recommanded though)
 
 camoufox:
   user_data_dir: "user_data_dir"
-  language: "en" # uk, us, fr, de, es, it, nl, pt, pl, ro, tr, ru, cn etc...
+  language: "us" # uk, us, fr, de, es, it, nl, pt, pl, ro, tr, ru, cn etc...
 
 
 
