@@ -129,6 +129,16 @@ def apply_to_job(browser, job_url: str, language: Optional[str], logger) -> bool
                     # go to next step
                     time.sleep(0.5)
                     continue  # go to next step
+                else:
+                    # Fallback: scan visible buttons by text
+                    btns = find_all(page, 'button:visible', logger=logger, desc="visible buttons")
+                    for btn in btns:
+                        text = (btn.inner_text() or "").lower()
+                        if "continuer" in text or "continue" in text:
+                            click_and_wait(btn, 3)
+                            time.sleep(0.5)
+                            break
+                    # proceed to next loop iteration regardless; if not advanced, the next checks will handle
 
             # try to find a submit button (dynamic text)
             # Try language-specific submit selectors first
@@ -148,6 +158,28 @@ def apply_to_job(browser, job_url: str, language: Optional[str], logger) -> bool
             ):
                 logger.info(f"Applied successfully to {job_url}")
                 break
+            else:
+                # Fallback: scan visible buttons by text and click
+                btns = find_all(page, 'button:visible', logger=logger, desc="visible buttons")
+                submit_btn = None
+                for btn in btns:
+                    text = (btn.inner_text() or "").lower()
+                    if (
+                        "déposer ma candidature" in text
+                        or "soumettre" in text
+                        or "submit" in text
+                        or "apply" in text
+                        or "bewerben" in text
+                        or "postular" in text
+                    ):
+                        submit_btn = btn
+                        break
+                if not submit_btn and btns:
+                    submit_btn = btns[-1]
+                if submit_btn:
+                    click_and_wait(submit_btn, 3)
+                    logger.info(f"Applied successfully to {job_url}")
+                    break
 
             # fallback: try to find a visible and enabled button to continue (other steps)
             btn = find_first(
