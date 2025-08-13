@@ -9,7 +9,7 @@ search:
   end: 100 # default is 100, you can set it to 1000 or more for larger searches (not recommanded though)
 
 camoufox:
-  user_data_dir: "user_data_dir"
+  user_data_dir: "C:\\camoufox_profile"
   language: "us" # uk, us, fr, de, es, it, nl, pt, pl, ro, tr, ru, cn etc...
 
 

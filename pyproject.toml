@@ -15,6 +15,7 @@ requires-python = ">=3.9"
 dependencies = [
   "camoufox",
   "PyYAML",
+  "pydantic>=2",
 ]
 
 [project.urls]
