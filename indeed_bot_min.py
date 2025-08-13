@@ -51,27 +51,33 @@ def main(config_path: str = "config.yaml") -> None:
             time.sleep(120)  # short wait for manual login, then exit
             return
 
-        # Single page visit only (no pagination)
-        base_url = cfg.search.base_url
-        print(f"Visiting URL: {base_url}")
-        page.goto(base_url)
-        page.wait_for_load_state("domcontentloaded")
-        print("Waiting for page to settle (Cloudflare, etc). If a button appears, click it manually.")
-        time.sleep(10)
+        # Single or multiple URL(s) visit (no pagination)
+        url_list: List[str]
+        if getattr(cfg.search, "base_urls", None):
+            url_list = list(cfg.search.base_urls or [])
+        else:
+            url_list = [cfg.search.base_url]
 
-        try:
-            links: List[str] = collect_indeed_apply_links(page, language)
-            print(f"Found {len(links)} Indeed Apply jobs on this page.")
-        except Exception as e:
-            print("Error extracting jobs:", e)
-            links = []
+        for base_url in url_list:
+            print(f"Visiting URL: {base_url}")
+            page.goto(base_url)
+            page.wait_for_load_state("domcontentloaded")
+            print("Waiting for page to settle (Cloudflare, etc). If a button appears, click it manually.")
+            time.sleep(10)
 
-        for job_url in links:
-            print(f"Applying to: {job_url}")
-            success = apply_to_job(browser, job_url, language, logger)
-            if not success:
-                logger.error(f"Failed to apply to {job_url}")
-            time.sleep(5)
+            try:
+                links: List[str] = collect_indeed_apply_links(page, language)
+                print(f"Found {len(links)} Indeed Apply jobs on this page.")
+            except Exception as e:
+                print("Error extracting jobs:", e)
+                links = []
+
+            for job_url in links:
+                print(f"Applying to: {job_url}")
+                success = apply_to_job(browser, job_url, language, logger)
+                if not success:
+                    logger.error(f"Failed to apply to {job_url}")
+                time.sleep(5)
 
 
 if __name__ == "__main__":

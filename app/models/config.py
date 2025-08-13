@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 import yaml
 from pydantic import BaseModel, Field, ValidationError
@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, ValidationError
 
 class SearchConfig(BaseModel):
     base_url: str = Field(..., description="Indeed search URL with query params")
+    base_urls: Optional[List[str]] = Field(None, description="Optional list of Indeed search URLs; if provided, supersedes base_url")
     start: int = Field(0, description="Pagination start index")
     end: int = Field(100, description="Pagination end index (inclusive)")
 

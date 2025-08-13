@@ -38,11 +38,14 @@ def run(config_path: str = "config.yaml") -> None:
             return
 
         print("Token found, proceeding with job search...")
-        base_url = cfg.search.base_url
-        start = cfg.search.start
-        end = cfg.search.end
-
-        list_urls: List[str] = paginate_urls(base_url, start, end, step=10)
+        # Backward compatible behavior: if base_urls not provided, paginate base_url
+        if getattr(cfg.search, "base_urls", None):
+            list_urls: List[str] = list(cfg.search.base_urls or [])
+        else:
+            base_url = cfg.search.base_url
+            start = cfg.search.start
+            end = cfg.search.end
+            list_urls: List[str] = paginate_urls(base_url, start, end, step=10)
 
         def process_pages(urls: List[str]) -> List[str]:
             all_job_links: List[str] = []
