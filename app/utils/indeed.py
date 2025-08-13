@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from typing import List, Optional
+from .selector import find_first, find_all, click_first
 
 
 def domain_for_language(lang: Optional[str]) -> str:
@@ -26,11 +27,19 @@ def domain_for_language(lang: Optional[str]) -> str:
 def collect_indeed_apply_links(page, language: Optional[str]) -> List[str]:
     """Collect all 'Indeed Apply' job links from the current search result page."""
     links: List[str] = []
-    job_cards = page.query_selector_all('div[data-testid="slider_item"]')
+    job_cards = find_all(page, 'div[data-testid="slider_item"]', desc="job cards")
     for card in job_cards:
-        indeed_apply = card.query_selector('[data-testid="indeedApply"]')
+        indeed_apply = None
+        try:
+            indeed_apply = card.query_selector('[data-testid="indeedApply"]')
+        except Exception:
+            indeed_apply = None
         if indeed_apply:
-            link = card.query_selector('a.jcs-JobTitle')
+            link = None
+            try:
+                link = card.query_selector('a.jcs-JobTitle')
+            except Exception:
+                link = None
             if link:
                 job_url = link.get_attribute('href')
                 if job_url:
@@ -63,31 +72,36 @@ def apply_to_job(browser, job_url: str, language: Optional[str], logger) -> bool
         page.wait_for_load_state("domcontentloaded")
         time.sleep(3)
         # Try to find the apply button using robust, language-agnostic selectors
-        apply_btn = None
+        apply_selectors = [
+            'button:has(span[class*="css-1ebo7dz"])',
+            'button:visible:has-text("Postuler")',
+            'button:visible:has-text("Apply")',
+        ]
+        clicked = False
         for _ in range(20):
-            # 1. Try button with a span with the unique Indeed Apply class (often css-1ebo7dz)
-            apply_btn = page.query_selector('button:has(span[class*="css-1ebo7dz"])')
-            # 2. Fallbacks: buttons with language-specific text
-            if not apply_btn:
-                apply_btn = page.query_selector('button:visible:has-text("Postuler")')
-            if not apply_btn:
-                apply_btn = page.query_selector('button:visible:has-text("Apply")')
-            # 3. Fallback: first visible button on the page (avoid close/cancel if possible)
-            if not apply_btn:
-                btns = page.query_selector_all('button:visible')
-                for btn in btns:
-                    label = (btn.get_attribute("aria-label") or "").lower()
-                    text = (btn.inner_text() or "").lower()
-                    if any(x in label for x in ("close", "cancel", "fermer", "annuler")):
-                        continue
-                    if "postuler" in text or "apply" in text or btn.is_visible():
-                        apply_btn = btn
-                        break
-            if apply_btn:
+            # attempt clicking using selector helper
+            if click_first(page, apply_selectors, timeout_ms=5000, logger=logger, desc="apply button"):
+                clicked = True
+                break
+            # fallback: scan visible buttons heuristically
+            btns = find_all(page, 'button:visible', logger=logger, desc="visible buttons")
+            apply_candidate = None
+            for btn in btns:
+                label = (btn.get_attribute("aria-label") or "").lower()
+                text = (btn.inner_text() or "").lower()
+                if any(x in label for x in ("close", "cancel", "fermer", "annuler")):
+                    continue
+                if "postuler" in text or "apply" in text:
+                    apply_candidate = btn
+                    break
+            if apply_candidate:
+                click_and_wait(apply_candidate, 5)
+                clicked = True
                 break
             time.sleep(0.5)
-        if apply_btn:
-            click_and_wait(apply_btn, 5)
+        if clicked:
+            # proceed to wizard
+            pass
         else:
             logger.warning(f"No Indeed Apply button found for {job_url}")
             page.close()
@@ -101,7 +115,7 @@ def apply_to_job(browser, job_url: str, language: Optional[str], logger) -> bool
                 break
             current_url = page.url
             # Resume step: select resume card if present
-            resume_card = page.query_selector('[data-testid="FileResumeCardHeader-title"]')
+            resume_card = find_first(page, ['[data-testid="FileResumeCardHeader-title"]'], logger=logger, desc="resume card")
             if resume_card:
                 # Click the resume card (or its parent if needed)
                 try:
@@ -111,42 +125,37 @@ def apply_to_job(browser, job_url: str, language: Optional[str], logger) -> bool
                     if parent:
                         parent.click()
                 time.sleep(1)
-                continuer_btn = None
-                btns = page.query_selector_all('button:visible')
-                for btn in btns:
-                    text = (btn.inner_text() or "").lower()
-                    if "continuer" in text or "continue" in text:
-                        continuer_btn = btn
-                        break
-                if continuer_btn:
-                    click_and_wait(continuer_btn, 3)
+                if click_first(page, ['button:visible:has-text("Continuer")', 'button:visible:has-text("Continue")'], timeout_ms=3000, logger=logger, desc="continue button"):
+                    # go to next step
+                    time.sleep(0.5)
                     continue  # go to next step
 
             # try to find a submit button (dynamic text)
-            submit_btn = None
-            btns = page.query_selector_all('button:visible')
-            for btn in btns:
-                text = (btn.inner_text() or "").lower()
-                if (
-                    "déposer ma candidature" in text or
-                    "soumettre" in text or
-                    "submit" in text or
-                    "apply" in text or
-                    "bewerben" in text or  # German
-                    "postular" in text     # Spanish
-                ):
-                    submit_btn = btn
-                    break
-            # fallback: last visible button (often the submit)
-            if not submit_btn and btns:
-                submit_btn = btns[-1]
-            if submit_btn:
-                click_and_wait(submit_btn, 3)
+            # Try language-specific submit selectors first
+            if click_first(
+                page,
+                [
+                    'button:visible:has-text("Déposer ma candidature")',
+                    'button:visible:has-text("Soumettre")',
+                    'button:visible:has-text("Submit")',
+                    'button:visible:has-text("Apply")',
+                    'button:visible:has-text("Bewerben")',
+                    'button:visible:has-text("Postular")',
+                ],
+                timeout_ms=3000,
+                logger=logger,
+                desc="submit button",
+            ):
                 logger.info(f"Applied successfully to {job_url}")
                 break
 
             # fallback: try to find a visible and enabled button to continue (other steps)
-            btn = page.query_selector('button[type="button"]:not([aria-disabled="true"]), button[type="submit"]:not([aria-disabled="true"])')
+            btn = find_first(
+                page,
+                ['button[type="button"]:not([aria-disabled="true"])', 'button[type="submit"]:not([aria-disabled="true"])'],
+                logger=logger,
+                desc="generic continue/submit",
+            )
             if btn:
                 click_and_wait(btn, 3)
                 if "confirmation" in page.url or "submitted" in page.url:
