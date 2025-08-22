@@ -127,16 +127,14 @@ def apply_to_job(browser, job_url, language, logger):
             btns = page.query_selector_all('button:visible')
             for btn in btns:
                 text = (btn.inner_text() or "").lower()
-                if (
-                    "déposer ma candidature" in text or
-                    "soumettre" in text or
-                    "submit" in text or
-                    "apply" in text or
-                    "bewerben" in text or  # German
-                    "postular" in text     # Spanish
-                ):
+                
+                # Cleaned up if statment for translations
+                applyText = ["déposer ma candidature", "soumettre", "submit", "apply", "bewerben", "postular"]  # add more translations if needed
+                
+                if (text in applyText):
                     submit_btn = btn
                     break
+
             # fallback: last visible button (often the submit)
             if not submit_btn and btns:
                 submit_btn = btns[-1]
@@ -145,7 +143,7 @@ def apply_to_job(browser, job_url, language, logger):
                 logger.info(f"Applied successfully to {job_url}")
                 break
 
-            # fallback: try to find a visible and enabled button to continue (other stesp)
+            # fallback: try to find a visible and enabled button to continue (other steps)
             btn = page.query_selector(
                 'button[type="button"]:not([aria-disabled="true"]), button[type="submit"]:not([aria-disabled="true"])')
             if btn:
@@ -175,78 +173,88 @@ def setup_logger():
     return logger
 
 
-with Camoufox(user_data_dir=user_data_dir,
-              persistent_context=True) as browser:
-    logger = setup_logger()
-    page = browser.new_page()
-    page.goto("https://" + language + ".indeed.com")
+if __name__ == "__main__":
+    with Camoufox(user_data_dir=user_data_dir,
+                persistent_context=True) as browser:
+        logger = setup_logger()
+        page = browser.new_page()
+        page.goto("https://" + language + ".indeed.com")
 
-    cookies = page.context.cookies()
-    ppid_cookie = next(
-        (cookie for cookie in cookies if cookie['name'] == 'PPID'), None)
-    if not ppid_cookie:
-        print("Token not found, please log in to Indeed first.")
-        print("Redirecting to login page...")
-        print("You need  to restart the bot after logging in.")
-        page.goto(
-            "https://secure.indeed.com/auth?hl=" + language)
-        time.sleep(1000)  # wait for manual login
-    else:
-        print("Token found, proceeding with job search...")
-        search_config = config.get("search", {})
-        base_url = search_config.get("base_url", "")
-        start = search_config.get("start", "")
-        end = search_config.get("end", "")
-
-        listURL = []
-        i = start
-        while i <= end:
-            url = f"{base_url}&start={i}"
-            listURL.append(url)
-            i += 10
-
-        all_job_links = []
-        for url in listURL:
-            print(f"Visiting URL: {url}")
-            page.goto(url)
-            page.wait_for_load_state("domcontentloaded")
-            print(
-                "Waiting for page to load, if any cloudflare protection button appears... please click it.")
-            time.sleep(10)
-
-            try:
-                links = collect_indeed_apply_links(page, language)
-                all_job_links.extend(links)
-                print(f"Found {len(links)} Indeed Apply jobs on this page.")
-            except Exception as e:
-                print("Error extracting jobs:", e)
+        cookies = page.context.cookies()
+        ppid_cookie = next(
+            (cookie for cookie in cookies if cookie['name'] == 'PPID'), None)
+        if not ppid_cookie:
+            print("Token not found, please log in to Indeed first.")
+            print("Redirecting to login page...")
+            print("You need  to restart the bot after logging in.")
+            page.goto(
+                "https://secure.indeed.com/auth?hl=" + language)
             time.sleep(5)
+            exit()  # requires bot restart
 
-        print(f"Total Indeed Apply jobs found: {len(all_job_links)}")
-        for job_url in all_job_links:
-            print(f"Applying to: {job_url}")
-            success = apply_to_job(browser, job_url, language, logger)
-            if not success:
-                logger.error(f"Failed to apply to {job_url}")
-            time.sleep(5)
-        all_job_links = []
-        for url in listURL:
-            print(f"Visiting URL: {url}")
-            page.goto(url)
-            page.wait_for_load_state("domcontentloaded")
-            time.sleep(7)
-            try:
-                links = collect_indeed_apply_links(page, language)
-                all_job_links.extend(links)
-                print(f"Found {len(links)} Indeed Apply jobs on this page.")
-            except Exception as e:
-                print("Error extracting jobs:", e)
-            time.sleep(5)
+        else:
+            print("Token found, proceeding with job search...")
+            search_config = config.get("search", {})
 
-        print(f"Total Indeed Apply jobs found: {len(all_job_links)}")
-        for job_url in all_job_links:
-            print(f"Applying to: {job_url}")
-            success = apply_to_job(browser, job_url, language, logger)
-            if not success:
-                logger.error(f"Failed to apply to {job_url}")
-            time.sleep(5)
+            # simplified unpacking (please test)
+            base_url, start, end = (search_config.get(k, "") for k in ("base_url", "start", "end"))
+
+            # edge case check for missing config values 
+            if not base_url or start is None or end is None:
+                print("Please configure base_url, start, and end in config.yaml")
+                exit(1)
+
+            
+
+            # simplified URL generation
+            listURL = []
+            for i in range(start, end + 1, 10): # step is 10 for Indeed pagination
+                url = f"{base_url}&start={i}"
+                listURL.append(url)
+
+            all_job_links = []
+            for url in listURL:
+                print(f"Visiting URL: {url}")
+                page.goto(url)
+                page.wait_for_load_state("domcontentloaded")
+                print(
+                    "Waiting for page to load, if any cloudflare protection button appears... please click it.")
+                time.sleep(10)
+
+                try:
+                    links = collect_indeed_apply_links(page, language)
+                    all_job_links.extend(links)
+                    print(f"Found {len(links)} Indeed Apply jobs on this page.")
+                except Exception as e:
+                    print("Error extracting job, removing url:", e)
+                    listURL.remove(url)  # remove problematic URL
+                time.sleep(5)
+
+            print(f"Total Indeed Apply jobs found: {len(all_job_links)}")
+            for job_url in all_job_links:
+                print(f"Applying to: {job_url}")
+                success = apply_to_job(browser, job_url, language, logger)
+                if not success:
+                    logger.error(f"Failed to apply to {job_url}")
+                time.sleep(5)
+            all_job_links = []
+            for url in listURL:
+                print(f"Visiting URL: {url}")
+                page.goto(url)
+                page.wait_for_load_state("domcontentloaded")
+                time.sleep(7)
+                try:
+                    links = collect_indeed_apply_links(page, language)
+                    all_job_links.extend(links)
+                    print(f"Found {len(links)} Indeed Apply jobs on this page.")
+                except Exception as e:
+                    print("Error extracting jobs:", e)
+                time.sleep(5)
+
+            print(f"Total Indeed Apply jobs found: {len(all_job_links)}")
+            for job_url in all_job_links:
+                print(f"Applying to: {job_url}")
+                success = apply_to_job(browser, job_url, language, logger)
+                if not success:
+                    logger.error(f"Failed to apply to {job_url}")
+                time.sleep(5)
